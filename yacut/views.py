@@ -6,7 +6,7 @@ from flask import render_template, flash, redirect, abort
 from . import app, db
 from .models import URLMap
 from .forms import URLMapForm
-from yacut.constants import DEFALUT_SHORT_LINK_ID_LENGTH
+from yacut.constants import DEFALUT_SHORT_LINK_ID_LENGTH, FORBIDDEN_SHORT_LINKS
 
 
 def get_unique_short_id():
@@ -16,7 +16,10 @@ def get_unique_short_id():
         return ''.join(random.choice(alphabet) for _ in range(DEFALUT_SHORT_LINK_ID_LENGTH))
 
     short_id = generate_short_id()
-    while URLMap.query.filter_by(short=short_id).first():
+    while (
+        short_id.lower() not in FORBIDDEN_SHORT_LINKS
+        and URLMap.query.filter_by(short=short_id).first()
+    ):
         short_id = generate_short_id()
 
     return short_id
